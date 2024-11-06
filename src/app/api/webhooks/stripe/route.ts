@@ -15,6 +15,8 @@ export async function POST(req: Request) {
 
 	let event: Stripe.Event;
 
+	console.log("api/webhooks/stripe body",body)
+
 	try {
 		event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
 	} catch (err: any) {
@@ -49,6 +51,8 @@ export async function POST(req: Request) {
 async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
 	const courseId = session.metadata?.courseId;
 	const stripeCustomerId = session.customer as string;
+
+	console.log("handleCheckoutSessionCompleted",session)
 
 	if (!courseId || !stripeCustomerId) {
 		throw new Error("Missing courseId or stripeCustomerId");
