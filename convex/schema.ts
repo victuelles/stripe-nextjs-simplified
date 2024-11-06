@@ -10,7 +10,7 @@ export default defineSchema({
 		currentSubscriptionId: v.optional(v.id("subscriptions")),
 	})
 		.index("by_clerkId", ["clerkId"])
-		.index("by_stripeCustomerId", ["stripeCustomerId"])
+	    .index("by_stripeCustomerId", ["stripeCustomerId"])
 		.index("by_currentSubscriptionId", ["currentSubscriptionId"]),
 
 	courses: defineTable({

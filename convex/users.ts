@@ -23,7 +23,7 @@ export const createUser = mutation({
 			email: args.email,
 			name: args.name,
 			clerkId: args.clerkId,
-			stripeCustomerId: args.stripeCustomerId,
+		 	stripeCustomerId: args.stripeCustomerId,
 		});
 
 		return userId;
