@@ -3,9 +3,9 @@ import stripe from "@/lib/stripe";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
-// import resend from "@/lib/resend";
-// import PurchaseConfirmationEmail from "@/emails/PurchaseConfirmationEmail";
-// import ProPlanActivatedEmail from "@/emails/ProPlanActivatedEmail";
+import resend from "@/lib/resend";
+import PurchaseConfirmationEmail from "@/emails/PurchaseConfirmationEmail";
+import ProPlanActivatedEmail from "@/emails/ProPlanActivatedEmail";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
 	let event: Stripe.Event;
 
-	console.log("api/webhooks/stripe body",body)
+	//console.log("api/webhooks/stripe body",body)
 
 	try {
 		event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
@@ -52,7 +52,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 	const courseId = session.metadata?.courseId;
 	const stripeCustomerId = session.customer as string;
 
-	console.log("handleCheckoutSessionCompleted",session)
+	//console.log("handleCheckoutSessionCompleted",session)
 
 	if (!courseId || !stripeCustomerId) {
 		throw new Error("Missing courseId or stripeCustomerId");
@@ -77,18 +77,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 		session.metadata.courseImageUrl &&
 		process.env.NODE_ENV === "development"
 	) {
-		// await resend.emails.send({
-		// 	from: "MasterClass <onboarding@resend.dev>",
-		// 	to: user.email,
-		// 	subject: "Purchase Confirmed",
-		// 	react: PurchaseConfirmationEmail({
-		// 		customerName: user.name,
-		// 		courseTitle: session.metadata?.courseTitle,
-		// 		courseImage: session.metadata?.courseImageUrl,
-		// 		courseUrl: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${courseId}`,
-		// 		purchaseAmount: session.amount_total! / 100,
-		// 	}),
-		// });
+		await resend.emails.send({
+			from: "MasterClass <onboarding@resend.dev>",
+			to: user.email,
+			subject: "Purchase Confirmed",
+			react: PurchaseConfirmationEmail({
+				customerName: user.name,
+				courseTitle: session.metadata?.courseTitle,
+				courseImage: session.metadata?.courseImageUrl,
+				courseUrl: `${process.env.NEXT_PUBLIC_APP_URL}/courses/${courseId}`,
+				purchaseAmount: session.amount_total! / 100,
+			}),
+		});
 	}
 }
 
@@ -120,18 +120,18 @@ async function handleSubscriptionUpsert(subscription: Stripe.Subscription, event
 		const isCreation = eventType === "customer.subscription.created";
 
 		if (isCreation && process.env.NODE_ENV === "development") {
-			// await resend.emails.send({
-			// 	from: "MasterClass <onboarding@resend.dev>",
-			// 	to: user.email,
-			// 	subject: "Welcome to MasterClass Pro!",
-			// 	react: ProPlanActivatedEmail({
-			// 		name: user.name,
-			// 		planType: subscription.items.data[0].plan.interval,
-			// 		currentPeriodStart: subscription.current_period_start,
-			// 		currentPeriodEnd: subscription.current_period_end,
-			// 		url: process.env.NEXT_PUBLIC_APP_URL!,
-			// 	}),
-			// });
+			await resend.emails.send({
+				from: "MasterClass <onboarding@resend.dev>",
+				to: user.email,
+				subject: "Welcome to MasterClass Pro!",
+				react: ProPlanActivatedEmail({
+					name: user.name,
+					planType: subscription.items.data[0].plan.interval,
+					currentPeriodStart: subscription.current_period_start,
+					currentPeriodEnd: subscription.current_period_end,
+					url: process.env.NEXT_PUBLIC_APP_URL!,
+				}),
+			});
 		}
 	} catch (error) {
 		console.error(`Error processing ${eventType} for subscription ${subscription.id}:`, error);
